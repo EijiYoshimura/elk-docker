@@ -42,7 +42,7 @@ sudo chown -R 1000:1000 elastic
 sudo sysctl -w vm.max_map_count=262144
 ```
 
-3. Run:
+5. Run:
 
 ```
 docker-compose up
