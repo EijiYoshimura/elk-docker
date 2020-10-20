@@ -1,0 +1,54 @@
+version: '3.1'
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.7.0
+    container_name: elasticsearch
+    hostname: elasticsearch
+    volumes:
+      - ./elastic/data:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+      - 9300:9300
+    environment:
+      http.host: '0.0.0.0'
+      ELASTIC_PASSWORD: changeme
+      discovery.type: single-node
+      ES_JAVA_OPTS: '-Xmx256m -Xms256m'
+    networks:
+      - elk-net
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.7.0
+    container_name: kibana
+    hostname: kibana
+    ports:
+      - 5601:5601
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    networks:
+      - elk-net
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.7.0
+    container_name: logstash
+    hostname: logstash
+    ports:
+      - 5000:5000/tcp
+      - 5000:5000/udp
+      - 9600:9600
+    volumes:
+      - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    environment:
+      LS_JAVA_OPTS: '-Xmx256m -Xms256m'
+    depends_on:
+      - elasticsearch
+      - kibana
+    networks:
+      - elk-net
+
+networks:
+  elk-net:
+    external: false
